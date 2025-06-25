@@ -1,0 +1,12 @@
+{
+    "base_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
+    "email": "your-email@example.com",
+    "api_key": "",
+    "retmax": 20,
+    "download_dir": "./downloads",
+    "max_file_size_mb": 5000,
+    "max_total_downloads_mb": 10000,
+    "max_concurrent_downloads": 3,
+    "download_timeout_seconds": 300,
+    "allowed_download_paths": ["./downloads", "/tmp/geo_downloads"]
+} 

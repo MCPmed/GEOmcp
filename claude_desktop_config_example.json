@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "geo-bio-mcp": {
+      "command": "/path_to_envs/geo-mcp-server/bin/geo-bio-mcp",
+      "env": {
+        "CONFIG_PATH": "/path_to_user_home/.geo-bio-mcp/config.json"
+      }
+    }
+  }
+} 
