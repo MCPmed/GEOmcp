@@ -44,7 +44,7 @@ def load_config():
             return json.load(cfg_file)
     except Exception as e:
         print(f"Error loading config from {CONFIG_PATH}: {e}", file=sys.stderr)
-        print("Please run `geo-mcp-server --init` to create a config file.", file=sys.stderr)
+        print("Please run `geo-mcp --init` to create a config file.", file=sys.stderr)
         raise e
 
 # Load initial config
@@ -52,7 +52,7 @@ config = load_config()
 
 # Base URL and credentials from config
 BASE_URL = config.get("base_url", "https://eutils.ncbi.nlm.nih.gov/entrez/eutils")
-EMAIL = config.get("email")
+EMAIL = config["email"]  # This will fail if email is not in config
 API_KEY = config.get("api_key")
 RETMAX = config.get("retmax", 20)
 
@@ -62,7 +62,7 @@ if not EMAIL:
     sys.exit(1)
 
 # Create MCP server
-server = mcp.server.Server("geo-mcp-server")
+server = mcp.server.Server("geo-mcp")
 
 
 def _esearch(db: str, term: str, retmax: int = 1) -> dict:

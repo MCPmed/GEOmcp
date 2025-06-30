@@ -25,49 +25,60 @@ def load_config():
             return json.load(cfg_file)
     except Exception as e:
         print(f"Error loading config from {CONFIG_PATH}: {e}", file=sys.stderr)
-        print("Please run `geo-mcp-server --init` to create a config file.", file=sys.stderr)
+        print("Please run `geo-mcp --init` to create a config file.", file=sys.stderr)
         raise e
 
-# Load initial config
-config = load_config()
-
-# Base URL and credentials from config
-BASE_URL = config.get("base_url", "https://eutils.ncbi.nlm.nih.gov/entrez/eutils")
-EMAIL = config["email"]  # This will fail if email is not in config
-API_KEY = config.get("api_key")
-
-# Validate required configuration
-if not EMAIL:
-    print("Error: Email is required for NCBI E-Utils. Please add 'email' to your config.json", file=sys.stderr)
-    sys.exit(1)
+def _get_config():
+    """Get configuration, loading it when needed."""
+    try:
+        return load_config()
+    except Exception:
+        # Return default config for basic functionality
+        return {
+            "base_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
+            "email": None,
+            "api_key": None
+        }
 
 def _esearch(db: str, term: str, retmax: int = 20) -> dict:
     """Perform an ESearch query and return JSON results."""
+    config = _get_config()
+    email = config.get("email")
+    if not email:
+        raise ValueError("Email is required for NCBI E-Utils. Please run `geo-mcp --init` to configure.")
+    
     params = {
         'db': db,
         'term': term,
         'retmax': retmax,
         'retmode': 'json',
-        'email': EMAIL,
+        'email': email,
     }
-    if API_KEY:
-        params['api_key'] = API_KEY
-    resp = requests.get(f"{BASE_URL}/esearch.fcgi", params=params)
+    api_key = config.get("api_key")
+    if api_key:
+        params['api_key'] = api_key
+    resp = requests.get(f"{config.get('base_url', 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils')}/esearch.fcgi", params=params)
     resp.raise_for_status()
     return resp.json()
 
 
 def _esummary(db: str, ids: list) -> dict:
     """Fetch summaries for a list of IDs."""
+    config = _get_config()
+    email = config.get("email")
+    if not email:
+        raise ValueError("Email is required for NCBI E-Utils. Please run `geo-mcp --init` to configure.")
+    
     params = {
         'db': db,
         'id': ','.join(ids),
         'retmode': 'json',
-        'email': EMAIL,
+        'email': email,
     }
-    if API_KEY:
-        params['api_key'] = API_KEY
-    resp = requests.get(f"{BASE_URL}/esummary.fcgi", params=params)
+    api_key = config.get("api_key")
+    if api_key:
+        params['api_key'] = api_key
+    resp = requests.get(f"{config.get('base_url', 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils')}/esummary.fcgi", params=params)
     resp.raise_for_status()
     return resp.json()
 

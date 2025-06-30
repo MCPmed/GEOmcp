@@ -3,7 +3,7 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "geo-bio-mcp"
+name = "geo-mcp"
 dynamic = ["version"]
 description = "A Model Context Protocol (MCP) server for accessing GEO (Gene Expression Omnibus) data through NCBI E-Utils API"
 readme = "README.md"
@@ -11,7 +11,7 @@ license = {text = "MIT"}
 requires-python = ">=3.10"
 keywords = ["mcp", "geo", "bioinformatics", "gene-expression", "ncbi", "e-utils"]
 authors = [
-    {name = "GEO BIO MCP Contributors", email = "matthias.flotho@ccb.uni-saarland.de"}
+    {name ="MCPmed Contributors", email = "matthias.flotho@ccb.uni-saarland.de"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -35,13 +35,13 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/maflot/geo-bio-mcp"
-Repository = "https://github.com/maflot/geo-bio-mcp"
-Documentation = "https://github.com/maflot/geo-bio-mcp#readme"
-"Bug Tracker" = "https://github.com/maflot/geo-bio-mcp/issues"
+Homepage = "https://github.com/MCPmed/geomcp"
+Repository = "https://github.com/MCPmed/geomcp"
+Documentation = "https://github.com/MCPmed/geomcp#readme"
+"Bug Tracker" = "https://github.com/MCPmed/geomcp/issues"
 
 [project.scripts]
-geo-bio-mcp = "geo_bio_mcp.main:main"
+geo-mcp = "geomcp.main:main"
 
 [project.optional-dependencies]
 dev = [
@@ -60,7 +60,7 @@ test = [
 source = "vcs"
 
 [tool.hatch.build.targets.wheel]
-packages = ["geo_bio_mcp"]
+packages = ["geomcp"]
 
 [tool.black]
 line-length = 88

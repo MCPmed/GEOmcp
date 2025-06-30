@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import uvicorn
-from .geo_tools import server
+from .mcp_server import server
 
 # Global event queue for SSE
 event_queue = deque(maxlen=100)  # Keep last 100 events
@@ -35,7 +35,7 @@ async def _get_tools() -> List[Any]:
     """Return the MCP tool-model list or raise."""
     try:
         # Import the handle_list_tools function directly
-        from .geo_tools import handle_list_tools
+        from .mcp_server import handle_list_tools
         
         # Call the async function directly
         tools = await handle_list_tools()
@@ -58,7 +58,7 @@ async def _get_tools() -> List[Any]:
     except TypeError:
         pass
     
-    raise RuntimeError("Could not locate tool registry in geo_tools.server")
+    raise RuntimeError("Could not locate tool registry in mcp_server.server")
 
 
 # Create the FastAPI app at module level
@@ -96,7 +96,7 @@ async def call_tool(req: ToolCallRequest):
         })
         
         # Import the handle_call_tool function directly
-        from .geo_tools import handle_call_tool
+        from .mcp_server import handle_call_tool
         
         # Call the async function
         out = await handle_call_tool(req.name, req.arguments)

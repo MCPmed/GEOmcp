@@ -18,12 +18,12 @@ def setup_environment():
 
     # Set CONFIG_PATH environment variable if not already set
     if not os.getenv("CONFIG_PATH"):
-        config_dir = Path.home() / ".geo-bio-mcp"
+        config_dir = Path.home() / ".geo-mcp"
         config_path = config_dir / "config.json"
         os.environ["CONFIG_PATH"] = str(config_path)
 
     # Get the config path
-    config_path = Path(os.getenv("CONFIG_PATH", str(Path.home() / ".geo-bio-mcp" / "config.json")))
+    config_path = Path(os.getenv("CONFIG_PATH", str(Path.home() / ".geo-mcp" / "config.json")))
     
     # If config file doesn't exist, create it from template
     if not config_path.exists():
@@ -65,10 +65,10 @@ async def run_mcp_server():
     
     # Check if we're running as a package or as a script
     try:
-        from .geo_tools import server
+        from .mcp_server import server
     except ImportError:
         # Running as script, use absolute import
-        from geo_tools import server
+        from mcp_server import server
     
     try:
         async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
@@ -86,7 +86,7 @@ def init_config(config_path: Path = None):
     if config_path is None:
         # Use the same logic as setup_environment for consistency
         if not os.getenv("CONFIG_PATH"):
-            config_dir = Path.home() / ".geo-bio-mcp"
+            config_dir = Path.home() / ".geo-mcp"
             config_path = config_dir / "config.json"
         else:
             config_path = Path(os.getenv("CONFIG_PATH"))
@@ -124,6 +124,11 @@ def init_config(config_path: Path = None):
         "allowed_download_paths": ["./downloads", "/tmp/geo_downloads"]
     }
     
+    # Find absolute path to geo-mcp executable
+    geo_mcp_path = shutil.which("geo-mcp") or "geo-mcp"
+    if geo_mcp_path == "geo-mcp":
+        print("WARNING: Could not find absolute path to geo-mcp executable. Falling back to 'geo-mcp'.", file=sys.stderr)
+    
     # Write config file
     try:
         print(f"Creating config file at: {config_path}")
@@ -135,8 +140,8 @@ def init_config(config_path: Path = None):
             Configuration file created successfully at: {config_path}
 
             You can now run the server with:
-            geo-bio-mcp --http
-            geo-bio-mcp
+            {geo_mcp_path} --http
+            {geo_mcp_path}
 
             ==================================================
             CLAUDE DESKTOP CONFIGURATION
@@ -149,7 +154,7 @@ def init_config(config_path: Path = None):
             {{
             "mcpServers": {{
                 "geo-mcp": {{
-                "command": "geo-bio-mcp",
+                "command": "{geo_mcp_path}",
                 "env": {{
                     "CONFIG_PATH": "{config_path}"
                 }}
@@ -173,11 +178,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  geo-bio-mcp --init                    # Initialize configuration file
-  geo-bio-mcp                          # Run MCP stdio server
-  geo-bio-mcp --http                    # Run HTTP server on localhost:8001
-  geo-bio-mcp --http --port 8080        # Run HTTP server on port 8080
-  geo-bio-mcp --http --host 0.0.0.0 --port 8080  # Run HTTP server on all interfaces
+  geo-mcp --init                    # Initialize configuration file
+  geo-mcp                          # Run MCP stdio server
+  geo-mcp --http                    # Run HTTP server on localhost:8001
+  geo-mcp --http --port 8080        # Run HTTP server on port 8080
+  geo-mcp --http --host 0.0.0.0 --port 8080  # Run HTTP server on all interfaces
         """
     )
     
@@ -268,7 +273,7 @@ Examples:
     parser.add_argument(
         "--version",
         action="version",
-        version="geo-bio-mcp 0.1.0"
+        version="geo-mcp 0.1.0"
     )
     
     args = parser.parse_args()
