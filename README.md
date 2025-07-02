@@ -17,7 +17,6 @@
 > **This project is currently in active development and is not yet production-ready.**
 > 
 > - The MCP stdio server is functional but may have bugs or incomplete features
-> - The HTTP server is in early development phase and has **not been properly tested**
 > - API endpoints and functionality may change without notice
 > - Use at your own risk and report any issues you encounter
 > 
