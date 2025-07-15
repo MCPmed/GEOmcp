@@ -36,7 +36,7 @@ pip install geo-bio-mcp
 install from source
 ```bash
 # Clone the repo (if not already)
-git clone <repo-url>
+git clone https://github.com/MCPmed/GEOmcp
 cd GEO_MCP
 pip install -e .
 ```
