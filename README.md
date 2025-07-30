@@ -6,7 +6,7 @@
   <em>Gene Expression Omnibus (GEO) - A public functional genomics data repository</em>
 </div>
 
-[![PyPI version](https://badge.fury.io/py/geo-bio-mcp.svg)](https://pypi.org/project/geo-bio-mcp/)
+[![PyPI version](https://badge.fury.io/py/geo-mcp.svg)](https://pypi.org/project/geo-mcp/)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-Protocol-blue.svg)](https://modelcontextprotocol.io/)
@@ -32,7 +32,7 @@ Claude will automatically use the tools if it fits the context.
 
 install from pip
 ```bash
-pip install geo-bio-mcp
+pip install geo-mcp
 ```
 install from source
 ```bash
@@ -46,10 +46,10 @@ pip install -e .
 
 Run init to create a config file
 ```bash
-geo-bio-mcp --init
+geo-mcp --init
 ```
 
-This will create a config file at `~/.geo-bio-mcp/config.json` (auto-created on first run if missing).
+This will create a config file at `~/.geo-mcp/config.json` (auto-created on first run if missing).
 This file will contain the following:
 ```json
 {
@@ -68,25 +68,25 @@ It will also print out a configuration template for your claude desktop configur
 
 - **MCP stdio mode:**
   ```bash
-  geo-bio-mcp
+  geo-mcp
   ```
 - **HTTP mode:**
   ```bash
-  geo-bio-mcp --http --port 8001
+  geo-mcp --http --port 8001
   ```
 
 ## Claude Desktop Integration
 
-### Common Issue: `spawn geo-bio-mcp ENOENT`
+### Common Issue: `spawn geo-mcp ENOENT`
 
-This error means Claude Desktop cannot find the `geo-bio-mcp` command. This is usually a PATH issue.
+This error means Claude Desktop cannot find the `geo-mcp` command. This is usually a PATH issue.
 
 ### Solution
 1. **Find the full path to the executable:**
    ```bash
-   which geo-bio-mcp
+   which geo-mcp
    ```
-   Example output: `/Users/youruser/miniforge3/bin/geo-bio-mcp`
+   Example output: `/Users/youruser/miniforge3/bin/geo-mcp`
 
 2. **Update your Claude config:**
    Instead of just `"geo-bio-mcp"`, use the full path:
@@ -94,7 +94,7 @@ This error means Claude Desktop cannot find the `geo-bio-mcp` command. This is u
    {
      "mcpServers": {
        "geo-mcp": {
-         "command": "/Users/youruser/miniforge3/bin/geo-bio-mcp",
+         "command": "/Users/youruser/miniforge3/bin/geo-mcp",
          "env": {
            "CONFIG_PATH": "/Users/youruser/.geo-mcp/config.json"
          }
@@ -104,7 +104,7 @@ This error means Claude Desktop cannot find the `geo-bio-mcp` command. This is u
    ```
 
 3. **(Optional) Use a Conda Environment:**
-   - Activate your conda env and run `which geo-bio-mcp` to get the correct path.
+   - Activate your conda env and run `which geo-mcp` to get the correct path.
    - Use that path in your Claude config as above.
 
 4. **Restart Claude Desktop** after updating the config.
@@ -112,7 +112,7 @@ This error means Claude Desktop cannot find the `geo-bio-mcp` command. This is u
 ---
 
 ## Troubleshooting
-- If you see `command not found: geo-bio-mcp`, make sure you installed with the correct Python/conda environment and that its `bin` directory is in your PATH.
+- If you see `command not found: geo-mcp`, make sure you installed with the correct Python/conda environment and that its `bin` directory is in your PATH.
 - If the config file is missing, it will be auto-created on first run, or you can copy the template from `geo_mcp_server/config_template.json`.
 
 ---
