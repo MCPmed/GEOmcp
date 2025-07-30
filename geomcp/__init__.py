@@ -10,11 +10,12 @@ __author__ = "MCPmed Contributors"
 __email__ = "matthias.flotho@ccb.uni-saarland.de"
 
 from .main import main
-from .geo_profiles import search_geo_profiles, search_geo_datasets
+from .geo_profiles import search_geo, search_geo_profiles, search_geo_datasets
 from .geo_downloader import download_geo
 
 __all__ = [
     "main",
+    "search_geo",
     "search_geo_profiles", 
     "search_geo_datasets",
     "download_geo"
