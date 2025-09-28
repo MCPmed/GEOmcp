@@ -273,7 +273,7 @@ Examples:
     parser.add_argument(
         "--version",
         action="version",
-        version="geo-mcp 0.1.0"
+        version="geo-mcp 0.1.1"
     )
     
     args = parser.parse_args()

@@ -28,7 +28,6 @@ class GEOMCPServer:
     def _setup_tools(self):
         """Register all available GEO tools"""
         
-        # Universal GEO search tool
         @self.server.call_tool()
         async def search_geo(arguments: dict) -> list[types.TextContent]:
             """Search GEO for all types of records (GSE, GSM, GPL, GDS)"""

@@ -5,7 +5,7 @@ This package provides tools to search and download data from the Gene Expression
 through NCBI E-Utils API using the Model Context Protocol.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "MCPmed Contributors"
 __email__ = "matthias.flotho@ccb.uni-saarland.de"
 
