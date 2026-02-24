@@ -1,0 +1,17 @@
+{
+    "base_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
+    "sra_base_url": "https://trace.ncbi.nlm.nih.gov/Traces/sra",
+    "email": "your_email@example.com",
+    "api_key": "",
+    "retmax": 20,
+    "download_dir": "./downloads",
+    "max_file_size_mb": 5000,
+    "max_total_downloads_mb": 50000,
+    "max_concurrent_downloads": 3,
+    "download_timeout_seconds": 300,
+    "sra_toolkit_path": "",
+    "allowed_download_paths": [
+        "./downloads",
+        "/tmp/geo_downloads"
+    ]
+}

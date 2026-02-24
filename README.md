@@ -1,247 +1,411 @@
-# Gene Expression Omnibus (GEO) MCP
+# GEO MCP Server with SRA Support
 
-<div align="center">
-  <img src="https://www.ncbi.nlm.nih.gov/geo/img/geo_main.gif" alt="GEO Logo" width="200"/>
-  <br/>
-  <em>Gene Expression Omnibus (GEO) - A public functional genomics data repository</em>
-</div>
+An enhanced [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for accessing **GEO (Gene Expression Omnibus)** data through NCBI E-Utils API, with comprehensive support for **SRA (Sequence Read Archive)** raw sequencing data downloads and conversion.
 
-[![PyPI version](https://badge.fury.io/py/geo-mcp.svg)](https://pypi.org/project/geo-mcp/)
-[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![MCP](https://img.shields.io/badge/MCP-Protocol-blue.svg)](https://modelcontextprotocol.io/)
-[![GEO](https://img.shields.io/badge/GEO-NCBI-orange.svg)](https://www.ncbi.nlm.nih.gov/geo/)
+## Features
 
-> ⚠️ **Development Warning** ⚠️
-> 
-> **This project is currently in active development and is not yet production-ready.**
-> 
-> - The MCP stdio server is functional but may have bugs or incomplete features
-> - API endpoints and functionality may change without notice
-> - Use at your own risk and report any issues you encounter
-> 
-> We recommend testing thoroughly in a development environment before using in production.
+### GEO Data Access
+- 🔍 **Search GEO databases**: Series (GSE), Samples (GSM), Platforms (GPL), Datasets (GDS), and Profiles
+- 📥 **Download metadata**: SOFT format, Series Matrix, MINiML XML
+- 📦 **Download supplementary files**: Processed data tables, raw array data
 
-A Model Context Protocol (MCP) server for accessing [GEO (Gene Expression Omnibus)](https://www.ncbi.nlm.nih.gov/geo/) data through NCBI E-Utils API.
-The tool will enable you to search for GEO datasets, series, samples, platforms, and profiles for your LLM.
-Tested with Claude Desktop, chatGPT has no out of the box support for this tool yet.
-Claude will automatically use the tools if it fits the context.
+### SRA Raw Sequencing Data (NEW)
+- 🔗 **Query SRA from GEO**: Map GEO Samples (GSM) to SRA Runs (SRR)
+- 📊 **Size estimation**: Dry-run mode to check file sizes before downloading
+- 💾 **Download & convert**: Integrated prefetch + fastq-dump workflow
+- 🛡️ **Safety constraints**: Size warnings and confirmation requirements
+- ✅ **Check sra-toolkit**: Verify installation and get setup instructions
 
-## Quick Install (pip)
+## Safety Features
 
-install from pip
+Following [maintainer recommendations](https://github.com/MCPmed/GEOmcp/issues/1), this server implements safety constraints for large file downloads:
+
+| Constraint | Implementation |
+|------------|----------------|
+| **Safe by Default** | `dry_run=True` by default - only estimates sizes |
+| **Dry-Run Mode** | `sra_estimate_size()` tool for size checking |
+| **Explicit Output** | Required `output_dir` for files >1GB |
+| **Confirmation** | `confirm_large=True` required for files >5GB |
+
+## Installation
+
+### Prerequisites
+- Python 3.10 or higher
+- (Optional) [SRA Toolkit](https://github.com/ncbi/sra-tools) for downloading raw FASTQ files
+
+### Install from Source
 ```bash
-pip install geo-mcp
-```
-install from source
-```bash
-# Clone the repo (if not already)
-git clone https://github.com/MCPmed/GEOmcp
-cd GEO_MCP
+# Clone the repository
+git clone https://github.com/yourusername/geo-mcp-server.git
+cd geo-mcp-server
+
+# Install dependencies
 pip install -e .
 ```
 
-## Configuration
+### Configuration
 
-Run init to create a config file
+1. **Initialize configuration:**
 ```bash
-geo-mcp --init
+python server.py --init
 ```
 
-This will create a config file at `~/.geo-mcp/config.json` (auto-created on first run if missing).
-This file will contain the following:
+2. **Edit the config file** at `~/.geo-mcp/config.json`:
+```json
+{
+    "email": "your_email@example.com",
+    "api_key": "YOUR_NCBI_API_KEY (optional)",
+    "download_dir": "~/geo_downloads",
+    "sra_toolkit_path": "/path/to/sra-toolkit/bin (optional)"
+}
+```
+
+> **Note:** NCBI requires an email address for E-Utils access. An API key is optional but recommended for higher rate limits (10 req/s vs 3 req/s). Get one at [NCBI](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/).
+
+## Usage
+
+### Running the Server
+
+**MCP stdio mode** (for Claude Desktop):
+```bash
+python server.py
+```
+
+**HTTP mode**:
+```bash
+python server.py --http --port 8000
+```
+
+### Claude Desktop Integration
+
+Add to your Claude Desktop configuration (`~/.config/claude-desktop/config.json`):
+
+```json
+{
+  "mcpServers": {
+    "geo_mcp": {
+      "command": "python",
+      "args": ["/path/to/geo_mcp_server/server.py"],
+      "env": {
+        "CONFIG_PATH": "/home/yourusername/.geo-mcp/config.json"
+      }
+    }
+  }
+}
+```
+
+## Available Tools (18 Total)
+
+### GEO Search Tools
+
+| Tool | Description |
+|------|-------------|
+| `geo_search` | Search all GEO record types with natural language (e.g., "Human RNA-seq") |
+| `geo_search_series` | Search GEO Series (GSE) - complete experiments |
+| `geo_search_samples` | Search GEO Samples (GSM) - individual samples |
+| `geo_search_platforms` | Search GEO Platforms (GPL) - array/sequencing platforms |
+| `geo_search_datasets` | Search GEO Datasets (GDS) - curated gene expression |
+| `geo_search_profiles` | Search GEO Profiles - gene expression profiles |
+
+### GEO Download Tools
+
+| Tool | Description |
+|------|-------------|
+| `geo_download_series` | Download GSE data files (SOFT, matrix, supplementary) |
+| `geo_download_sample` | Download GSM supplementary files |
+| `geo_get_download_status` | Check if a GEO dataset has been downloaded |
+| `geo_list_downloads` | List all downloaded datasets |
+| `geo_cleanup_downloads` | Clean up downloaded files |
+
+### SRA Tools
+
+| Tool | Description |
+|------|-------------|
+| `sra_query_from_geo` | Query SRA Run information from a GEO Series |
+| `sra_get_metadata` | Get SRA run metadata |
+| `sra_estimate_size` | **NEW** Estimate download sizes before downloading (dry-run) |
+| `sra_generate_download_commands` | Generate download commands for various methods |
+| `sra_check_toolkit` | Check sra-toolkit installation |
+| `sra_download` | Download SRA directly via HTTP (small files only) |
+| `sra_download_and_convert` | **NEW** Download with prefetch and convert to FASTQ |
+
+## Example Workflows
+
+### 1. Search with Natural Language
+
+```
+User: Find Human RNA-seq datasets
+
+AI: I'll search for Human RNA-seq datasets in GEO.
+[Uses geo_search_series with term="Human RNA-seq"]
+
+Results:
+- GSE319287: "TPD52 Inhibits Aldosterone Synthesis..." (6 samples)
+- GSE213095: "Positive feedback between cDC1s and CD8+ T cells..." (46 samples)
+- GSE320065: "Transcriptomic and Functional Responses of Human Airway Cells..." (56 samples)
+```
+
+### 2. Download Processed Data
+
+```
+User: Download the metadata for GSE12345
+
+AI: I'll download the SOFT file and series matrix for GSE12345.
+[Uses geo_download_series with geo_id="GSE12345", file_types=["soft", "matrix"]]
+
+Results:
+✓ Downloaded GSE12345_family.soft.gz (1.2 MB)
+✓ Downloaded GSE12345_series_matrix.txt.gz (5.6 MB)
+Location: ~/geo_downloads/gse/GSE12345/
+```
+
+### 3. Find and Download Raw Sequencing Data (Safe Workflow)
+
+**Step 1: Get SRA accessions**
+```
+User: Get the SRA run accessions for GSE272467
+
+AI: I'll query the SRA information from this GEO Series.
+[Uses sra_query_from_geo with gse_id="GSE272467"]
+
+Results:
+- Total samples: 4
+- Samples with SRA data: 4
+- Total SRA runs: 4
+- All SRA accessions: ["SRR29864801", "SRR29864802", "SRR29864803", "SRR29864804"]
+```
+
+**Step 2: Estimate size (recommended)**
+```
+User: How large are these files?
+
+AI: Let me estimate the download sizes.
+[Uses sra_estimate_size with sra_ids=["SRR29864801"]]
+
+Results:
+- SRA size: ~76 MB
+- Estimated FASTQ size: ~190 MB
+- Read count: 7,178,576
+- Warning: Small file (< 100 MB)
+```
+
+**Step 3: Download and convert**
+```
+User: Download and convert SRR29864801 to FASTQ
+
+AI: I'll download the SRA file and convert it to FASTQ format.
+[Uses sra_download_and_convert with sra_id="SRR29864801", dry_run=False]
+
+Results:
+✓ Downloaded SRR29864801.sra (76 MB)
+✓ Converted to FASTQ
+  - SRR29864801_1.fastq (660 KB, 5000 reads)
+  - SRR29864801_2.fastq (660 KB, 5000 reads)
+Location: ~/geo_downloads/sra/SRR29864801/
+```
+
+### 4. Safety Constraints in Action
+
+```
+User: Download SRR1234567
+
+AI: First, let me estimate the size before downloading.
+[Uses sra_estimate_size with sra_ids=["SRR1234567"]]
+
+Results:
+- SRA size: ~2.5 GB
+- Estimated FASTQ size: ~6.25 GB
+- Warning: LARGE FILE (1-5 GB)
+
+⚠️ This is a large download that requires explicit output directory.
+Please provide output_dir parameter to proceed.
+
+User: Download to /data/sra
+
+AI: 
+[Uses sra_download_and_convert with 
+ sra_id="SRR1234567", 
+ dry_run=False, 
+ output_dir="/data/sra"]
+
+✓ Download complete!
+```
+
+### 5. Check SRA Toolkit
+
+```
+User: Do I have sra-toolkit installed?
+
+AI: Let me check your sra-toolkit installation.
+[Uses sra_check_toolkit]
+
+Results:
+✓ prefetch: available (version 3.3.0)
+✓ fastq-dump: available (version 3.3.0)
+✓ fasterq-dump: available (version 3.3.0)
+✓ vdb-validate: available (version 3.3.0)
+
+All tools are installed and ready to use!
+```
+
+## SRA Download Methods
+
+### Method 1: Using sra_download_and_convert (Recommended)
+
+Integrated workflow with safety features:
+```python
+# Step 1: Estimate size (dry-run)
+sra_estimate_size(sra_ids=["SRR1234567"])
+
+# Step 2: Download and convert based on size
+# Small file (<1GB)
+sra_download_and_convert(sra_id="SRR1234567", dry_run=False)
+
+# Medium file (1-5GB) - requires output_dir
+sra_download_and_convert(
+    sra_id="SRR1234567",
+    dry_run=False,
+    output_dir="/path/to/output"
+)
+
+# Large file (>5GB) - requires confirmation
+sra_download_and_convert(
+    sra_id="SRR1234567",
+    dry_run=False,
+    output_dir="/path/to/output",
+    confirm_large=True
+)
+```
+
+### Method 2: Using SRA Toolkit Manually
+
+1. **Install sra-toolkit**: Follow instructions at https://github.com/ncbi/sra-tools
+
+2. **Download and convert**:
+```bash
+# Download SRA file
+prefetch SRR1234567
+
+# Convert to FASTQ (3-way split for paired-end)
+fastq-dump --split-3 SRR1234567
+```
+
+### Method 3: Direct HTTP Download (Small Files Only)
+
+For small files or when sra-toolkit is not available:
+```bash
+# Using wget
+wget https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos2/sra-pub-run-11/SRR1234567/SRR1234567.1
+
+# Using curl
+curl -o SRR1234567.sra https://sra-downloadb.be-md.ncbi.nlm.nih.gov/sos2/sra-pub-run-11/SRR1234567/SRR1234567.1
+```
+
+## Project Structure
+
+```
+geo_mcp_server/
+├── geomcp_sra/
+│   ├── __init__.py
+│   ├── config.py          # Configuration management
+│   ├── geo_search.py      # GEO search functionality (E-Utilities)
+│   ├── geo_download.py    # GEO data download
+│   └── sra_handler.py     # SRA query, size estimation, download & convert
+├── server.py              # Main MCP server with 18 tools
+├── config.json            # Configuration template
+├── pyproject.toml         # Project dependencies
+├── requirements.txt       # Python dependencies
+├── README.md              # This file
+└── SKILL.md               # Skill documentation
+```
+
+## Comparison with Original GEOmcp
+
+| Feature | GEOmcp (Original) | This Project (geo-mcp-server) |
+|---------|-------------------|---------------------------|
+| GEO Search | ✓ | ✓ (Enhanced with natural language) |
+| SOFT Download | ✓ | ✓ |
+| Matrix Download | ✓ | ✓ |
+| Supplementary Files | ✓ | ✓ |
+| **SRA Query** | ✗ | **✓** |
+| **SRR Mapping** | ✗ | **✓** |
+| **Size Estimation** | ✗ | **✓ (Dry-run mode)** |
+| **Download & Convert** | ✗ | **✓ (Integrated workflow)** |
+| **Safety Constraints** | ✗ | **✓ (>1GB, >5GB checks)** |
+| Tool Count | 11 | **18** |
+
+## Configuration Options
+
+### Full Config File Reference
+
+>>>>>>> ad562a4 (initialize files, commit to branch Test)
 ```json
 {
     "base_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
     "email": "your_email@example.com",
-    "api_key": "YOUR_API_KEY"
+    "api_key": "YOUR_NCBI_API_KEY (optional but recommended)",
+    "download_dir": "~/geo_downloads",
+    "max_file_size_mb": 5000,
+    "max_total_downloads_mb": 10000,
+    "max_concurrent_downloads": 3,
+    "download_timeout_seconds": 300,
+    "allowed_download_paths": ["~/geo_downloads", "/tmp/geo_downloads"],
+    "sra_toolkit_path": "/path/to/sra-toolkit/bin (optional)"
 }
 ```
 
-It will also print out a configuration template for your claude desktop configuration file.
-
-- `email` is required by NCBI.
-- `api_key` is optional but recommended for higher rate limits ([get one here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
-
-## Running the Server
-
-- **MCP stdio mode:**
-  ```bash
-  geo-mcp
-  ```
-- **HTTP mode:**
-  ```bash
-  geo-mcp --http --port 8001
-  ```
-
-## Claude Desktop Integration
-
-### Common Issue: `spawn geo-mcp ENOENT`
-
-This error means Claude Desktop cannot find the `geo-mcp` command. This is usually a PATH issue.
-
-### Solution
-1. **Find the full path to the executable:**
-   ```bash
-   which geo-mcp
-   ```
-   Example output: `/Users/youruser/miniforge3/bin/geo-mcp`
-
-2. **Update your Claude config:**
-   Instead of just `"geo-bio-mcp"`, use the full path:
-   ```json
-   {
-     "mcpServers": {
-       "geo-mcp": {
-         "command": "/Users/youruser/miniforge3/bin/geo-mcp",
-         "env": {
-           "CONFIG_PATH": "/Users/youruser/.geo-mcp/config.json"
-         }
-       }
-     }
-   }
-   ```
-
-3. **(Optional) Use a Conda Environment:**
-   - Activate your conda env and run `which geo-mcp` to get the correct path.
-   - Use that path in your Claude config as above.
-
-4. **Restart Claude Desktop** after updating the config.
-
----
-
 ## Troubleshooting
-- If you see `command not found: geo-mcp`, make sure you installed with the correct Python/conda environment and that its `bin` directory is in your PATH.
-- If the config file is missing, it will be auto-created on first run, or you can copy the template from `geo_mcp_server/config_template.json`.
 
----
-
-## Usage
-
-### MCP Server (stdio mode)
-For use with MCP clients like Claude Desktop:
-
-```bash
-cd geo_mcp_server
-python main.py --mode stdio
+### Email not configured
 ```
-
-### HTTP Server (localhost:8000)
-For HTTP API access:
-
-```bash
-# Option 1: Using the main script
-cd geo_mcp_server
-python main.py --mode http --host localhost --port 8000
-
-# Option 2: Using the convenience script
-python run_server.py
+Error: Email is required for NCBI E-utilities.
 ```
+**Solution**: Edit `~/.geo-mcp/config.json` and add your email address.
 
-### HTTP API Endpoints
-
-Once the HTTP server is running on localhost:8000, you can access:
-
-- **Root**: `GET /` - Server status
-- **Health Check**: `GET /health` - Health check endpoint
-- **List Tools**: `GET /tools` - List all available tools
-- **Call Tool**: `POST /tools/call` - Execute a tool with arguments
-- **API Documentation**: `GET /docs` - Interactive API documentation (Swagger UI)
-
-### Example HTTP API Usage
-
-```bash
-# List available tools
-curl http://localhost:8000/tools
-
-# Search GEO Profiles
-curl -X POST http://localhost:8000/tools/call \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "search_geo_profiles",
-    "arguments": {
-      "term": "cancer",
-      "retmax": 5
-    }
-  }'
-
-# Search GEO Datasets
-curl -X POST http://localhost:8000/tools/call \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "search_geo_datasets", 
-    "arguments": {
-      "term": "breast cancer",
-      "retmax": 10
-    }
-  }'
+### SRA toolkit not found
 ```
+fasterq-dump not found. Please install sra-toolkit.
+```
+**Solution**: Install sra-toolkit from https://github.com/ncbi/sra-tools and set `sra_toolkit_path` in config.
 
-## Available Tools
+### Rate limiting
+```
+Error: Rate limit exceeded
+```
+**Solution**: Add an NCBI API key to your config for higher rate limits (10 req/s vs 3 req/s).
 
-This MCP server provides access to all major GEO databases through the following tools:
+### Large file safety error
+```
+SAFETY CHECK: File size is ~2.5 GB. Large downloads require an explicit output directory.
+```
+**Solution**: Provide `output_dir` parameter for files >1GB, or both `output_dir` and `confirm_large=True` for files >5GB.
 
-### Search Tools
+## References
 
-- **`search_geo_profiles`** - Search gene expression profiles across different biological contexts
-  - *Example searches*: "cancer", "breast cancer", "p53", "apoptosis"
-  
-- **`search_geo_datasets`** - Search curated gene expression datasets
-  - *Example searches*: "diabetes", "Alzheimer's disease", "drug response", "tissue specific"
-  
-- **`search_geo_series`** - Search original submitter-supplied gene expression series
-  - *Example searches*: "GSE12345", "microarray", "RNA-seq", "time course"
-  
-- **`search_geo_samples`** - Search individual gene expression samples
-  - *Example searches*: "GSM123456", "human", "mouse", "tumor", "normal"
-  
-- **`search_geo_platforms`** - Search microarray platform definitions
-  - *Example searches*: "Affymetrix", "Illumina", "Agilent", "GPL96"
+- [GEO Home](https://www.ncbi.nlm.nih.gov/geo/)
+- [SRA Home](https://www.ncbi.nlm.nih.gov/sra)
+- [NCBI E-Utilities](https://www.ncbi.nlm.nih.gov/books/NBK25501/)
+- [SRA Toolkit Documentation](https://github.com/ncbi/sra-tools/wiki)
+- [MCP Documentation](https://modelcontextprotocol.io/)
 
-### Search Parameters
+## License
 
-Each tool accepts:
-- **`term`** (required): Search term or query string
-- **`retmax`** (optional, default: 20): Maximum number of results to return
+MIT License - See LICENSE file for details.
 
-### Example usage
-For now just chat with claude desktop and it will use the tools automatically if it fits the context.
+## Contributing
 
-**User:** find a small brain dataset  
+Contributions are welcome! Please feel free to submit issues or pull requests.
 
-**Assistant:** I'll help you find a small brain dataset from the GEO database. Let me search for brain-related datasets with a maximum of one result.  
+### Contributing SRA Support Back to Original GEOmcp
 
-**Assistant (system):** *search_geo_datasets*  
+This project implements the [enhancement request](https://github.com/MCPmed/GEOmcp/issues/1) for SRA raw data support with the following safety features as recommended by maintainers:
+- Safe by default (dry-run mode)
+- Size estimation before download
+- Explicit output directory requirement for large files
+- Confirmation for very large files (>5GB)
 
-**Assistant:** I found a brain-related dataset for you:
+## Acknowledgments
 
-- **Dataset:** GSE290848  
-- **Title:** Maternal Stress Triggers Early-Life Eczema via Fetal Mast Cell Reprogramming [10x Genomics Multiome ATAC + Gene Expression]  
-- **Species:** Mouse (*Mus musculus*)  
-- **Samples:** 8  
-- **Data type:** ATAC-seq & gene expression (10x Genomics Multiome)  
-- **Publication date:** 21 Jun 2025  
-
-This small dataset explores how prenatal stress affects neuro-immune circuits and mast-cell development.  
-
-Would you like me to download this dataset or search for others?
-
----
-
-**User:** download GSE290848  
-
-**Assistant:** I'll download the GSE290848 dataset for you.  
-
-**Assistant (system):** *download_geo_data*  
-
-**Assistant:** Download complete.  
-
-**Downloaded files**
-
-- `GSE290848_family.soft.gz` — series, platform & sample info  
-- `GSE290848_metadata.xml` — detailed study metadata  
-
-**Location:** `/Users/matthiasflo/Documents/2025/GEO_MCP/geo_mcp_server/downloads/gse/GSE290848`  
-**Total size:** 0.01 MB  
-
-The dataset is ready for analysis. Let me know if you’d like to explore it further.
+- Original [GEOmcp](https://github.com/MCPmed/GEOmcp) project for the foundation
+- NCBI for providing the GEO and SRA databases
+- MCP team for the Model Context Protocol

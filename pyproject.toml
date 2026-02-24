@@ -3,18 +3,18 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "geo-mcp"
+name = "geo-mcp-sra"
 dynamic = ["version"]
-description = "A Model Context Protocol (MCP) server for accessing GEO (Gene Expression Omnibus) data through NCBI E-Utils API"
+description = "An enhanced MCP server for accessing GEO data with SRA raw sequencing support"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
-keywords = ["mcp", "geo", "bioinformatics", "gene-expression", "ncbi", "e-utils"]
+keywords = ["mcp", "geo", "sra", "bioinformatics", "gene-expression", "ncbi", "rna-seq", "fastq"]
 authors = [
-    {name ="MCPmed Contributors", email = "matthias.flotho@ccb.uni-saarland.de"}
+    {name = "GEO MCP Contributors"}
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -22,26 +22,25 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "mcp[cli]>=1.9.4",
-    "requests>=2.31.0",
-    "aiohttp>=3.8.0",
+    "mcp>=1.9.0",
+    "httpx>=0.27.0",
     "aiofiles>=23.0.0",
-    "fastapi>=0.100.0",
-    "uvicorn>=0.20.0",
+    "pydantic>=2.0.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/MCPmed/geomcp"
-Repository = "https://github.com/MCPmed/geomcp"
-Documentation = "https://github.com/MCPmed/geomcp#readme"
-"Bug Tracker" = "https://github.com/MCPmed/geomcp/issues"
+Homepage = "https://github.com/yourusername/geo-mcp-sra"
+Repository = "https://github.com/yourusername/geo-mcp-sra"
+Documentation = "https://github.com/yourusername/geo-mcp-sra#readme"
+"Bug Tracker" = "https://github.com/yourusername/geo-mcp-sra/issues"
 
 [project.scripts]
-geo-mcp = "geomcp.main:main"
+geo-mcp-sra = "server:main"
 
 [project.optional-dependencies]
 dev = [
@@ -51,23 +50,19 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0.0",
 ]
-test = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.21.0",
-]
 
 [tool.hatch.version]
 source = "vcs"
 
 [tool.hatch.build.targets.wheel]
-packages = ["geomcp"]
+packages = ["geomcp_sra"]
 
 [tool.black]
-line-length = 88
+line-length = 100
 target-version = ['py310']
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py310"
 
 [tool.mypy]
